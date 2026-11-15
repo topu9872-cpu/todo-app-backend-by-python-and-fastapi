@@ -1,18 +1,26 @@
-from fastapi import APIRouter
 
-from app.database import todo_collection
-from app.schema import TodoCreate
 from fastapi import FastAPI
-router = APIRouter(tags=["Todos"])
-app=FastAPI()
+from fastapi.middleware.cors import CORSMiddleware
 
-@router.post("/tasks")
-async def create_todo(todo: TodoCreate):
-    result = await todo_collection.insert_one(todo.model_dump())
+from app.routes.todo import router as todo_router
 
-    return {
-        "message": "Todo created",
-        "id": str(result.inserted_id)
-    }
+app = FastAPI()
 
-app.include_router(router)
+# CORS Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Register Router
+app.include_router(todo_router)
+
+
+@app.get("/")
+async def root():
+    return {"message": "FastAPI Backend Running"}
