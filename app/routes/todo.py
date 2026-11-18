@@ -2,7 +2,7 @@ from app.database import todo_collection
 from app.schema import TodoCreate
 from fastapi import APIRouter, HTTPException
 from fastapi import Query
-
+from bson import ObjectId
 router = APIRouter(tags=["Todos"])
 
 
@@ -32,17 +32,17 @@ async def get_all_todo(
     result = (await todo_collection.find(query).skip(skip).limit(limit).to_list(length=limit))
 
     for task in result:
-            task['_id'] = str(task['_id'])
+        task['_id'] = str(task['_id'])
     return {
-            'message': 'Tasks fetched successfully',
-            'tasks': result,
-            'pagination': {
-                'total': total,
-                'page': page,
-                'limit': limit,
-                'totalPages': (total + limit - 1) // limit
-            }
+        'message': 'Tasks fetched successfully',
+        'tasks': result,
+        'pagination': {
+            'total': total,
+            'page': page,
+            'limit': limit,
+            'totalPages': (total + limit - 1) // limit
         }
+    }
 
 
 @router.get('/tasks')
@@ -84,4 +84,27 @@ async def get_todo(
             'limit': limit,
             'totalPages': (total + limit - 1) // limit
         }
+    }
+
+
+@router.get('/tasks/{id}')
+async def getTaskDetails(id: str):
+
+    if not ObjectId.is_valid(id):
+        raise HTTPException(
+            status_code=400,
+            detail='Invalid task id'
+        )
+    result = await todo_collection.find_one({'_id': ObjectId(id)})
+    if  result is None:
+        raise HTTPException(
+            status_code=404,
+            detail='task is not found'
+        )
+
+    result['_id'] = str(result['_id'])
+    return {
+        'success': True,
+        ' message': 'task details get successfully',
+        'task': result
     }
