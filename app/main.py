@@ -13,6 +13,8 @@ app.add_middleware(
        os.getenv('NEXT_PUBLIC_URL')
     ],
     allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
    
 )
 

@@ -96,7 +96,7 @@ async def getTaskDetails(id: str):
             detail='Invalid task id'
         )
     result = await todo_collection.find_one({'_id': ObjectId(id)})
-    if  result is None:
+    if result is None:
         raise HTTPException(
             status_code=404,
             detail='task is not found'
@@ -107,4 +107,24 @@ async def getTaskDetails(id: str):
         'success': True,
         ' message': 'task details get successfully',
         'task': result
+    }
+
+
+@router.delete('/tasks/{id}')
+async def deleteTask(id:str):
+    if not ObjectId.is_valid(id):
+        raise HTTPException(
+            status_code=400,
+            detail='Invalid task id'
+        )
+
+    result = await todo_collection.find_one_and_delete({'_id': ObjectId(id)})
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail='task is not found'
+        )
+    return {
+        'success': True,
+        'message': 'task deleted successfully'
     }
